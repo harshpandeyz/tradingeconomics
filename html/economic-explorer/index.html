@@ -10,11 +10,18 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #0f1117;
-      --card: #1a1d27;
-      --card-strong: #202432;
+      --bg: #090b10;
+      --card: rgba(19, 23, 34, 0.82);
+      --card-strong: rgba(28, 33, 48, 0.92);
       --accent: #00d4aa;
       --accent-soft: rgba(0, 212, 170, 0.14);
+      --accent-glow: rgba(0, 212, 170, 0.32);
+      --blue: #49a2ff;
+      --blue-soft: rgba(73, 162, 255, 0.14);
+      --amber: #ffcc66;
+      --amber-soft: rgba(255, 204, 102, 0.14);
+      --violet: #a78bfa;
+      --violet-soft: rgba(167, 139, 250, 0.14);
       --text: #ffffff;
       --muted: #aab0bf;
       --muted-strong: #d8dce7;
@@ -22,7 +29,8 @@
       --border-strong: rgba(255, 255, 255, 0.14);
       --danger: #ff6b6b;
       --danger-soft: rgba(255, 107, 107, 0.1);
-      --shadow: 0 24px 70px rgba(0, 0, 0, 0.36);
+      --shadow: 0 26px 90px rgba(0, 0, 0, 0.42);
+      --soft-shadow: 0 16px 42px rgba(0, 0, 0, 0.28);
     }
 
     * {
@@ -32,22 +40,39 @@
     body {
       margin: 0;
       min-height: 100vh;
-      background: var(--bg);
+      background:
+        radial-gradient(circle at 12% 8%, rgba(0, 212, 170, 0.18), transparent 32vw),
+        radial-gradient(circle at 84% 14%, rgba(73, 162, 255, 0.16), transparent 34vw),
+        radial-gradient(circle at 50% 100%, rgba(167, 139, 250, 0.1), transparent 36vw),
+        linear-gradient(180deg, #0b0d14 0%, var(--bg) 52%, #07090d 100%);
       color: var(--text);
       font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       overflow-x: hidden;
     }
 
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 70%);
+    }
+
     .page {
-      width: min(1120px, calc(100% - 32px));
+      position: relative;
+      width: min(1180px, calc(100% - 32px));
       margin: 0 auto;
       padding: 56px 0;
     }
 
     header {
       display: grid;
-      gap: 10px;
-      margin-bottom: 36px;
+      gap: 16px;
+      margin-bottom: 28px;
       padding-bottom: 24px;
       border-bottom: 1px solid var(--border);
     }
@@ -68,9 +93,24 @@
       overflow-wrap: anywhere;
     }
 
+    .eyebrow {
+      width: fit-content;
+      color: var(--accent);
+      border: 1px solid rgba(0, 212, 170, 0.28);
+      background: rgba(0, 212, 170, 0.08);
+      border-radius: 999px;
+      padding: 7px 11px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
     .subtitle {
+      max-width: 720px;
       color: var(--muted);
       font-size: clamp(1rem, 2vw, 1.2rem);
+      line-height: 1.65;
     }
 
     .author {
@@ -83,8 +123,43 @@
       gap: 28px;
     }
 
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+
+    .meta-pill,
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      padding: 7px 11px;
+      color: var(--muted-strong);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(0, 212, 170, 0.12);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
     .feature {
+      position: relative;
+      overflow: hidden;
       background:
+        radial-gradient(circle at top right, rgba(73, 162, 255, 0.1), transparent 34%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01)),
         var(--card);
       border: 1px solid var(--border);
@@ -92,6 +167,34 @@
       box-shadow: var(--shadow);
       padding: clamp(20px, 3vw, 28px);
       min-width: 0;
+      backdrop-filter: blur(18px);
+    }
+
+    .feature::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent 22%, transparent 78%, rgba(0, 212, 170, 0.08));
+      opacity: 0.72;
+    }
+
+    .feature.loading::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -35%;
+      width: 32%;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
+      animation: sweep 1.15s ease-in-out infinite;
+    }
+
+    .feature > * {
+      position: relative;
+      z-index: 1;
     }
 
     .feature-header {
@@ -104,11 +207,18 @@
 
     .feature-title {
       display: grid;
+      gap: 7px;
     }
 
     h2 {
       font-size: clamp(1.35rem, 2.5vw, 2rem);
       letter-spacing: 0;
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.55;
     }
 
     .badge {
@@ -121,6 +231,172 @@
       font-size: 0.78rem;
       font-weight: 700;
       white-space: nowrap;
+    }
+
+    .snapshot {
+      display: grid;
+      gap: 20px;
+      margin-bottom: 28px;
+      padding: clamp(20px, 3vw, 30px);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(0, 212, 170, 0.18), transparent 34%),
+        radial-gradient(circle at 82% 12%, rgba(255, 204, 102, 0.12), transparent 28%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.022)),
+        rgba(12, 15, 23, 0.82);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .snapshot-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .snapshot-title {
+      display: grid;
+      gap: 8px;
+    }
+
+    .snapshot-title h2 {
+      font-size: clamp(1.55rem, 3vw, 2.35rem);
+    }
+
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kpi-card {
+      position: relative;
+      display: grid;
+      gap: 14px;
+      min-height: 178px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02)),
+        rgba(16, 20, 30, 0.78);
+      padding: 18px;
+      box-shadow: var(--soft-shadow);
+      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      background: radial-gradient(circle at 20% 0%, var(--kpi-glow, var(--accent-glow)), transparent 44%);
+      opacity: 0.58;
+      transition: opacity 200ms ease;
+    }
+
+    .kpi-card:hover,
+    .country-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 255, 255, 0.2);
+      box-shadow: 0 22px 60px rgba(0, 0, 0, 0.34), 0 0 34px var(--kpi-glow, rgba(0, 212, 170, 0.1));
+    }
+
+    .kpi-card:hover::before {
+      opacity: 0.82;
+    }
+
+    .kpi-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .kpi-card.blue {
+      --kpi-glow: rgba(73, 162, 255, 0.24);
+    }
+
+    .kpi-card.amber {
+      --kpi-glow: rgba(255, 204, 102, 0.23);
+    }
+
+    .kpi-card.violet {
+      --kpi-glow: rgba(167, 139, 250, 0.22);
+    }
+
+    .kpi-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .trend-arrow {
+      color: var(--accent);
+      font-size: 1rem;
+    }
+
+    .kpi-value {
+      font-size: clamp(1.9rem, 3vw, 2.55rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    .kpi-country {
+      color: var(--text);
+      font-size: 1.02rem;
+      font-weight: 750;
+    }
+
+    .kpi-note {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .snapshot-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 12px 14px;
+    }
+
+    .market-mood {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted-strong);
+      font-weight: 700;
+    }
+
+    .mood-gauge {
+      position: relative;
+      width: 72px;
+      height: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .mood-gauge span {
+      display: block;
+      width: 62%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--blue));
+      box-shadow: 0 0 18px rgba(0, 212, 170, 0.32);
+      transition: width 420ms ease;
     }
 
     .controls {
@@ -163,7 +439,7 @@
       background:
         linear-gradient(45deg, transparent 50%, var(--accent) 50%),
         linear-gradient(135deg, var(--accent) 50%, transparent 50%),
-        var(--card-strong);
+        rgba(28, 33, 48, 0.94);
       background-position:
         calc(100% - 18px) 20px,
         calc(100% - 12px) 20px,
@@ -189,10 +465,10 @@
     button {
       cursor: pointer;
       border-color: transparent;
-      background: var(--accent);
+      background: linear-gradient(135deg, #1ff0c4, var(--accent));
       color: #07120f;
       font-weight: 800;
-      box-shadow: 0 14px 32px rgba(0, 212, 170, 0.18);
+      box-shadow: 0 14px 32px rgba(0, 212, 170, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.28);
       transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
     }
 
@@ -224,14 +500,67 @@
       margin-bottom: 14px;
     }
 
-    .status.error {
-      color: var(--danger);
-      width: fit-content;
+    .status.error,
+    .status.empty {
+      width: 100%;
       max-width: 100%;
-      border: 1px solid rgba(255, 107, 107, 0.22);
       border-radius: 8px;
-      background: var(--danger-soft);
-      padding: 10px 12px;
+    }
+
+    .status.error {
+      color: #ffd3d3;
+      border: 1px solid rgba(255, 107, 107, 0.18);
+      background: rgba(255, 107, 107, 0.075);
+      padding: 12px 14px;
+    }
+
+    .empty-state {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(255, 204, 102, 0.08), transparent 38%),
+        rgba(255, 255, 255, 0.035);
+      padding: 14px;
+      color: var(--muted-strong);
+    }
+
+    .empty-icon {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      background: var(--amber-soft);
+      color: var(--amber);
+      font-size: 1.15rem;
+    }
+
+    .empty-copy {
+      display: grid;
+      gap: 4px;
+    }
+
+    .empty-copy strong {
+      color: var(--text);
+    }
+
+    .empty-copy span {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
     }
 
     .loading {
@@ -249,6 +578,21 @@
       animation: spin 0.8s linear infinite;
     }
 
+    .loading::after,
+    .skeleton-line {
+      content: "";
+      display: inline-block;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+      background-size: 220% 100%;
+      animation: shimmer 1.15s linear infinite;
+    }
+
+    .loading::after {
+      width: min(28vw, 180px);
+    }
+
     .chart-shell {
       display: none;
       position: relative;
@@ -256,11 +600,14 @@
       width: 100%;
       border: 1px solid var(--border);
       border-radius: 8px;
-      background: rgba(15, 17, 23, 0.58);
+      background:
+        radial-gradient(circle at 10% 0%, rgba(0, 212, 170, 0.08), transparent 34%),
+        rgba(8, 11, 17, 0.68);
       padding: 18px;
       opacity: 0;
       transform: translateY(8px);
       pointer-events: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
 
     canvas {
@@ -291,6 +638,7 @@
       padding: 18px;
       opacity: 0;
       transform: translateY(8px);
+      transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
     }
 
     .country-card.visible {
@@ -300,6 +648,27 @@
     .country-card h3 {
       color: var(--accent);
       font-size: 1.1rem;
+    }
+
+    .card-topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 5px 8px;
+      color: var(--muted-strong);
+      font-size: 0.75rem;
+      font-weight: 800;
+      white-space: nowrap;
     }
 
     .metric-grid {
@@ -326,6 +695,50 @@
       overflow-wrap: anywhere;
     }
 
+    .insight-panel {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(0, 212, 170, 0.2);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(0, 212, 170, 0.12), transparent 42%),
+        rgba(255, 255, 255, 0.035);
+      padding: 14px;
+      color: var(--muted-strong);
+      line-height: 1.55;
+    }
+
+    .insight-panel.visible {
+      display: flex;
+      animation: fadeIn 360ms ease forwards;
+    }
+
+    .insight-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       *,
       *::before,
@@ -350,7 +763,36 @@
       }
     }
 
+    @keyframes pulse {
+      0%,
+      100% {
+        opacity: 0.58;
+        transform: scale(0.94);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes shimmer {
+      to {
+        background-position: -220% 0;
+      }
+    }
+
+    @keyframes sweep {
+      to {
+        left: 105%;
+      }
+    }
+
     @media (max-width: 920px) {
+      .snapshot-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .controls,
       .controls.history-controls {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -368,7 +810,7 @@
 
     @media (max-width: 640px) {
       .page {
-        width: min(1120px, calc(100% - 64px));
+        width: min(1120px, calc(100% - 32px));
         padding: 30px 0;
       }
 
@@ -386,12 +828,18 @@
         display: grid;
       }
 
+      .snapshot-head,
+      .snapshot-strip {
+        display: grid;
+      }
+
       .badge {
         width: fit-content;
       }
 
       .controls,
       .controls.history-controls,
+      .snapshot-grid,
       .cards {
         grid-template-columns: 1fr;
       }
@@ -406,16 +854,44 @@
 <body>
   <div class="page">
     <header>
+      <div class="eyebrow">Macroeconomic intelligence</div>
       <h1>Global Economic Explorer</h1>
-      <p class="subtitle">Built with Trading Economics API</p>
+      <p class="subtitle">A product-style dashboard for comparing global growth, inflation, labor, and rate signals using Trading Economics data.</p>
       <p class="author">by Harsh Pandey</p>
+      <div class="hero-meta" aria-label="Dashboard metadata">
+        <span class="meta-pill"><span class="pulse-dot" aria-hidden="true"></span><span id="snapshotSource">Demo-ready snapshot</span></span>
+        <span class="meta-pill">Last updated: <span id="lastUpdated">Just now</span></span>
+      </div>
     </header>
 
+    <section class="snapshot" aria-labelledby="snapshot-heading">
+      <div class="snapshot-head">
+        <div class="snapshot-title">
+          <h2 id="snapshot-heading">Global Snapshot</h2>
+          <p class="helper">A quick read on where momentum, price pressure, and policy strength appear most notable across the tracked economies.</p>
+        </div>
+        <span class="badge">Insight layer</span>
+      </div>
+
+      <div id="snapshotGrid" class="snapshot-grid" aria-live="polite"></div>
+
+      <div class="snapshot-strip">
+        <div class="market-mood" aria-label="Market mood indicator">
+          <span>Market Mood</span>
+          <span class="mood-gauge" aria-hidden="true"><span id="moodGauge"></span></span>
+          <span id="marketMoodText">Constructive</span>
+        </div>
+        <div class="summary-chip">Coverage: 10 economies</div>
+        <div class="summary-chip">Indicators: GDP, inflation, unemployment, rates</div>
+      </div>
+    </section>
+
     <main>
-      <section class="feature" aria-labelledby="compare-heading">
+      <section id="compareSection" class="feature" aria-labelledby="compare-heading">
         <div class="feature-header">
           <div class="feature-title">
             <h2 id="compare-heading">Country Comparison</h2>
+            <p class="helper">Compare two economies on the latest available macro indicator and scan the generated interpretation.</p>
           </div>
           <div class="badge">Latest data</div>
         </div>
@@ -437,16 +913,18 @@
         </div>
 
         <div id="compareStatus" class="status" aria-live="polite"></div>
+        <div id="comparisonInsight" class="insight-panel" aria-live="polite"></div>
         <div id="compareChartShell" class="chart-shell">
           <canvas id="compareChart" role="img" aria-label="Bar chart comparing two countries by selected economic indicator"></canvas>
         </div>
         <div id="comparisonCards" class="cards"></div>
       </section>
 
-      <section class="feature" aria-labelledby="history-heading">
+      <section id="historySection" class="feature" aria-labelledby="history-heading">
         <div class="feature-header">
           <div class="feature-title">
             <h2 id="history-heading">Historical Trend</h2>
+            <p class="helper">Review the time-series pattern for a selected economy to understand direction, volatility, and policy context.</p>
           </div>
           <div class="badge">Time series</div>
         </div>
@@ -469,12 +947,18 @@
         </div>
       </section>
     </main>
+
+    <footer>
+      <span>Single-file HTML/CSS/JavaScript dashboard using Chart.js.</span>
+      <span>Built for responsive, recruiter-friendly macro exploration.</span>
+    </footer>
   </div>
 
   <script>
     const API_BASE_URL = "https://api.tradingeconomics.com";
     const API_KEY = "guest:guest";
     const NO_DATA_MESSAGE = "No data available for this selection";
+    const FRIENDLY_EMPTY_MESSAGE = "Live data is currently unavailable. The interface remains fully functional for demonstration purposes.";
 
     const countries = [
       "United States",
@@ -496,15 +980,101 @@
       "Interest Rate"
     ];
 
+    const indicatorProfiles = {
+      "GDP Growth Rate": {
+        suffix: "%",
+        better: "higher",
+        label: "growth momentum",
+        pressure: "growth momentum",
+        latestSummary: "growth"
+      },
+      "Inflation Rate": {
+        suffix: "%",
+        better: "lower",
+        label: "inflation pressure",
+        pressure: "price pressure",
+        latestSummary: "inflation"
+      },
+      "Unemployment Rate": {
+        suffix: "%",
+        better: "lower",
+        label: "labor-market pressure",
+        pressure: "labor slack",
+        latestSummary: "unemployment"
+      },
+      "Interest Rate": {
+        suffix: "%",
+        better: "higher",
+        label: "policy-rate strength",
+        pressure: "policy rate strength",
+        latestSummary: "rates"
+      }
+    };
+
+    const defaultSnapshotInsights = [
+      {
+        id: "growth",
+        title: "Highest GDP Growth",
+        country: "India",
+        value: 7.8,
+        suffix: "%",
+        delta: "+0.4 pp",
+        note: "Demo signal based on growth leadership across the tracked universe.",
+        tone: "accent",
+        arrow: "^"
+      },
+      {
+        id: "inflation",
+        title: "Lowest Inflation",
+        country: "Canada",
+        value: 2.1,
+        suffix: "%",
+        delta: "-0.3 pp",
+        note: "A lower reading suggests softer price pressure versus peers.",
+        tone: "blue",
+        arrow: "v"
+      },
+      {
+        id: "rates",
+        title: "Strongest Interest Rate",
+        country: "Brazil",
+        value: 10.5,
+        suffix: "%",
+        delta: "Restrictive",
+        note: "Policy remains comparatively firm in this demo snapshot.",
+        tone: "amber",
+        arrow: "^"
+      },
+      {
+        id: "improving",
+        title: "Fastest Improving Economy",
+        country: "Mexico",
+        value: 1.2,
+        suffix: " pp",
+        delta: "Momentum",
+        note: "Measured as latest growth improving fastest against previous value.",
+        tone: "violet",
+        arrow: "^"
+      }
+    ];
+
     const elements = {
+      snapshotGrid: document.getElementById("snapshotGrid"),
+      snapshotSource: document.getElementById("snapshotSource"),
+      lastUpdated: document.getElementById("lastUpdated"),
+      moodGauge: document.getElementById("moodGauge"),
+      marketMoodText: document.getElementById("marketMoodText"),
+      compareSection: document.getElementById("compareSection"),
       compareCountryOne: document.getElementById("compareCountryOne"),
       compareCountryTwo: document.getElementById("compareCountryTwo"),
       compareIndicator: document.getElementById("compareIndicator"),
       compareButton: document.getElementById("compareButton"),
       compareStatus: document.getElementById("compareStatus"),
+      comparisonInsight: document.getElementById("comparisonInsight"),
       compareChartShell: document.getElementById("compareChartShell"),
       compareChart: document.getElementById("compareChart"),
       comparisonCards: document.getElementById("comparisonCards"),
+      historySection: document.getElementById("historySection"),
       historyCountry: document.getElementById("historyCountry"),
       historyIndicator: document.getElementById("historyIndicator"),
       historyButton: document.getElementById("historyButton"),
@@ -525,6 +1095,100 @@
         .replaceAll("'", "&#039;");
     }
 
+    function getIndicatorProfile(indicator) {
+      return indicatorProfiles[indicator] || {
+        suffix: "",
+        better: "higher",
+        label: "macro signal",
+        pressure: "macro pressure",
+        latestSummary: "indicator"
+      };
+    }
+
+    function formatRelativeTime(date = new Date()) {
+      return date.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    }
+
+    function updateLastUpdated(date = new Date()) {
+      elements.lastUpdated.textContent = formatRelativeTime(date);
+    }
+
+    function animateNumber(element, endValue, suffix = "") {
+      const numericValue = Number(endValue);
+
+      if (Number.isNaN(numericValue) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        element.textContent = `${formatValue(endValue)}${suffix}`;
+        return;
+      }
+
+      const startTime = performance.now();
+      const duration = 760;
+      const startValue = 0;
+
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        const currentValue = startValue + (numericValue - startValue) * easedProgress;
+        element.textContent = `${formatValue(currentValue)}${suffix}`;
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        }
+      }
+
+      requestAnimationFrame(tick);
+    }
+
+    function renderSnapshot(insights = defaultSnapshotInsights, source = "Demo-ready snapshot", mood = "Constructive", moodScore = 62) {
+      elements.snapshotSource.textContent = source;
+      elements.marketMoodText.textContent = mood;
+      elements.moodGauge.style.width = `${Math.max(12, Math.min(100, moodScore))}%`;
+      elements.snapshotGrid.innerHTML = insights
+        .map((insight) => `
+          <article class="kpi-card ${escapeHtml(insight.tone || "")}" aria-label="${escapeHtml(insight.title)}">
+            <div class="kpi-label">
+              <span>${escapeHtml(insight.title)}</span>
+              <span class="trend-arrow" aria-hidden="true">${escapeHtml(insight.arrow || "^")}</span>
+            </div>
+            <div>
+              <div class="kpi-value" data-counter-value="${escapeHtml(insight.value)}" data-counter-suffix="${escapeHtml(insight.suffix || "")}">${escapeHtml(formatValue(insight.value))}${escapeHtml(insight.suffix || "")}</div>
+              <div class="kpi-country">${escapeHtml(insight.country)}</div>
+            </div>
+            <div class="kpi-note">${escapeHtml(insight.delta)} - ${escapeHtml(insight.note)}</div>
+          </article>
+        `)
+        .join("");
+
+      elements.snapshotGrid.querySelectorAll("[data-counter-value]").forEach((node) => {
+        animateNumber(node, node.dataset.counterValue, node.dataset.counterSuffix || "");
+      });
+    }
+
+    function setMarketMoodFromGrowth(growthRecord) {
+      if (!growthRecord || growthRecord.latest === null) {
+        return { text: "Constructive", score: 62 };
+      }
+
+      if (growthRecord.latest >= 4) {
+        return { text: "Risk-on", score: 78 };
+      }
+
+      if (growthRecord.latest >= 2) {
+        return { text: "Constructive", score: 62 };
+      }
+
+      if (growthRecord.latest >= 0) {
+        return { text: "Cautious", score: 42 };
+      }
+
+      return { text: "Defensive", score: 24 };
+    }
+
     function fillSelect(select, options, selectedValue) {
       const fragment = document.createDocumentFragment();
 
@@ -543,6 +1207,7 @@
 
     function setStatus(element, message, type = "info") {
       element.classList.toggle("error", type === "error");
+      element.classList.toggle("empty", type === "empty");
       element.replaceChildren();
 
       if (message instanceof Node) {
@@ -551,6 +1216,30 @@
       }
 
       element.textContent = message;
+    }
+
+    function emptyState(title = "Live data is currently unavailable.", detail = FRIENDLY_EMPTY_MESSAGE) {
+      const wrapper = document.createElement("div");
+      const icon = document.createElement("span");
+      const copy = document.createElement("span");
+      const headline = document.createElement("strong");
+      const description = document.createElement("span");
+      const fallback = document.createElement("span");
+
+      wrapper.className = "empty-state";
+      wrapper.dataset.fallbackMessage = NO_DATA_MESSAGE;
+      icon.className = "empty-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.textContent = "!";
+      copy.className = "empty-copy";
+      headline.textContent = title;
+      description.textContent = detail;
+      fallback.className = "sr-only";
+      fallback.textContent = NO_DATA_MESSAGE;
+
+      copy.append(headline, description, fallback);
+      wrapper.append(icon, copy);
+      return wrapper;
     }
 
     function loadingText(message) {
@@ -908,19 +1597,81 @@
       return new Chart(getCanvasContext(canvas), config);
     }
 
-    function renderComparisonCards(records) {
+    function trendPill(record) {
+      if (record.previous === null || record.latest === null) {
+        return "Latest";
+      }
+
+      const difference = record.latest - record.previous;
+      if (Math.abs(difference) < 0.01) {
+        return "Flat";
+      }
+
+      return `${difference > 0 ? "^" : "v"} ${formatValue(Math.abs(difference))}`;
+    }
+
+    function generateComparisonInsight(records, indicator) {
+      const [first, second] = records;
+      const profile = getIndicatorProfile(indicator);
+      const firstValue = first.latest;
+      const secondValue = second.latest;
+
+      if (firstValue === null || secondValue === null) {
+        return "The selected economies can be compared once live values are available.";
+      }
+
+      if (Math.abs(firstValue - secondValue) < 0.01) {
+        return `${first.country} and ${second.country} are effectively level on ${profile.label} in the latest available reading.`;
+      }
+
+      const higher = firstValue > secondValue ? first : second;
+      const lower = firstValue > secondValue ? second : first;
+
+      if (indicator === "Inflation Rate") {
+        return `${higher.country} currently shows higher inflation pressure than ${lower.country}, while ${lower.country} appears closer to price stability.`;
+      }
+
+      if (indicator === "Unemployment Rate") {
+        return `${lower.country} currently shows a tighter labor market than ${higher.country}, based on the lower unemployment reading.`;
+      }
+
+      if (indicator === "Interest Rate") {
+        return `${higher.country} currently has the stronger policy-rate stance than ${lower.country}, suggesting tighter monetary settings.`;
+      }
+
+      return `${higher.country} currently shows stronger GDP growth momentum than ${lower.country} in the latest available data.`;
+    }
+
+    function showComparisonInsight(records, indicator) {
+      elements.comparisonInsight.innerHTML = `
+        <span class="insight-icon" aria-hidden="true">AI</span>
+        <span>${escapeHtml(generateComparisonInsight(records, indicator))}</span>
+      `;
+      elements.comparisonInsight.classList.add("visible");
+    }
+
+    function hideComparisonInsight() {
+      elements.comparisonInsight.classList.remove("visible");
+      elements.comparisonInsight.replaceChildren();
+    }
+
+    function renderComparisonCards(records, indicator) {
+      const profile = getIndicatorProfile(indicator);
       elements.comparisonCards.innerHTML = records
         .map((record) => `
           <article class="country-card visible">
-            <h3>${escapeHtml(record.country)}</h3>
+            <div class="card-topline">
+              <h3>${escapeHtml(record.country)}</h3>
+              <span class="stat-pill">${escapeHtml(trendPill(record))}</span>
+            </div>
             <div class="metric-grid">
               <div class="metric">
                 <span>Latest Value</span>
-                <strong>${escapeHtml(formatValue(record.latest))}</strong>
+                <strong>${escapeHtml(formatValue(record.latest))}${escapeHtml(profile.suffix)}</strong>
               </div>
               <div class="metric">
                 <span>Previous Value</span>
-                <strong>${escapeHtml(formatValue(record.previous))}</strong>
+                <strong>${escapeHtml(formatValue(record.previous))}${record.previous === null ? "" : escapeHtml(profile.suffix)}</strong>
               </div>
               <div class="metric">
                 <span>Last Update</span>
@@ -932,6 +1683,138 @@
         .join("");
     }
 
+    function latestRecordsFromPayload(payload) {
+      return normalizeArray(payload)
+        .map(normalizeLatestRecord)
+        .filter((record) => countries.some((country) => normalizeFieldName(country) === normalizeFieldName(record.country)))
+        .filter((record) => record.latest !== null);
+    }
+
+    function findExtreme(records, mode = "max") {
+      if (!records.length) {
+        return null;
+      }
+
+      return records.reduce((best, record) => {
+        if (!best) {
+          return record;
+        }
+
+        return mode === "min"
+          ? (record.latest < best.latest ? record : best)
+          : (record.latest > best.latest ? record : best);
+      }, null);
+    }
+
+    function findFastestImproving(records) {
+      const candidates = records
+        .filter((record) => record.previous !== null)
+        .map((record) => ({ ...record, improvement: record.latest - record.previous }))
+        .filter((record) => !Number.isNaN(record.improvement));
+
+      if (!candidates.length) {
+        return null;
+      }
+
+      return candidates.reduce((best, record) => record.improvement > best.improvement ? record : best);
+    }
+
+    function buildLiveSnapshot(payloadByIndicator) {
+      const growth = latestRecordsFromPayload(payloadByIndicator["GDP Growth Rate"]);
+      const inflation = latestRecordsFromPayload(payloadByIndicator["Inflation Rate"]);
+      const rates = latestRecordsFromPayload(payloadByIndicator["Interest Rate"]);
+      const highestGrowth = findExtreme(growth, "max");
+      const lowestInflation = findExtreme(inflation, "min");
+      const strongestRate = findExtreme(rates, "max");
+      const improving = findFastestImproving(growth);
+
+      if (!highestGrowth && !lowestInflation && !strongestRate && !improving) {
+        return null;
+      }
+
+      const fallback = defaultSnapshotInsights;
+      const mood = setMarketMoodFromGrowth(highestGrowth);
+
+      return {
+        mood,
+        insights: [
+          highestGrowth ? {
+            id: "growth",
+            title: "Highest GDP Growth",
+            country: highestGrowth.country,
+            value: highestGrowth.latest,
+            suffix: "%",
+            delta: highestGrowth.previous === null ? "Latest" : `${highestGrowth.latest >= highestGrowth.previous ? "+" : ""}${formatValue(highestGrowth.latest - highestGrowth.previous)} pp`,
+            note: "Live leader across the tracked economies.",
+            tone: "accent",
+            arrow: highestGrowth.previous !== null && highestGrowth.latest < highestGrowth.previous ? "v" : "^"
+          } : fallback[0],
+          lowestInflation ? {
+            id: "inflation",
+            title: "Lowest Inflation",
+            country: lowestInflation.country,
+            value: lowestInflation.latest,
+            suffix: "%",
+            delta: lowestInflation.previous === null ? "Latest" : `${lowestInflation.latest <= lowestInflation.previous ? "" : "+"}${formatValue(lowestInflation.latest - lowestInflation.previous)} pp`,
+            note: "Lowest live price-pressure signal in the current universe.",
+            tone: "blue",
+            arrow: lowestInflation.previous !== null && lowestInflation.latest > lowestInflation.previous ? "^" : "v"
+          } : fallback[1],
+          strongestRate ? {
+            id: "rates",
+            title: "Strongest Interest Rate",
+            country: strongestRate.country,
+            value: strongestRate.latest,
+            suffix: "%",
+            delta: "Policy stance",
+            note: "Highest live rate setting among tracked economies.",
+            tone: "amber",
+            arrow: "^"
+          } : fallback[2],
+          improving ? {
+            id: "improving",
+            title: "Fastest Improving Economy",
+            country: improving.country,
+            value: improving.improvement,
+            suffix: " pp",
+            delta: "Growth momentum",
+            note: "Largest positive change versus the previous reading.",
+            tone: "violet",
+            arrow: improving.improvement >= 0 ? "^" : "v"
+          } : fallback[3]
+        ]
+      };
+    }
+
+    async function refreshGlobalSnapshot() {
+      renderSnapshot(defaultSnapshotInsights, "Syncing live signals...", "Constructive", 62);
+
+      const responses = await Promise.allSettled(indicators.map(async (indicator) => {
+        const payload = await fetchJson(buildComparisonUrl(indicator));
+        return [indicator, payload];
+      }));
+
+      const payloadByIndicator = responses.reduce((payloads, response) => {
+        if (response.status === "fulfilled") {
+          const [indicator, payload] = response.value;
+          payloads[indicator] = payload;
+        }
+
+        return payloads;
+      }, {});
+
+      const liveSnapshot = buildLiveSnapshot(payloadByIndicator);
+
+      if (!liveSnapshot) {
+        renderSnapshot(defaultSnapshotInsights, "Demo-ready snapshot", "Constructive", 62);
+        updateLastUpdated();
+        return;
+      }
+
+      renderSnapshot(liveSnapshot.insights, "Live snapshot", liveSnapshot.mood.text, liveSnapshot.mood.score);
+      updateLastUpdated();
+    }
+
     async function compareCountries() {
       const countryOne = elements.compareCountryOne.value;
       const countryTwo = elements.compareCountryTwo.value;
@@ -939,9 +1822,11 @@
       const url = buildComparisonUrl(indicator);
 
       elements.compareButton.disabled = true;
+      elements.compareSection.classList.add("loading");
       setStatus(elements.compareStatus, loadingText("Fetching comparison data..."));
       resetShell(elements.compareChartShell);
       elements.comparisonCards.innerHTML = "";
+      hideComparisonInsight();
 
       if (comparisonChart) {
         comparisonChart.destroy();
@@ -983,18 +1868,22 @@
           options: chartOptions("Latest value")
         });
 
-        renderComparisonCards(selectedRecords);
+        renderComparisonCards(selectedRecords, indicator);
+        showComparisonInsight(selectedRecords, indicator);
         setStatus(elements.compareStatus, "");
+        updateLastUpdated();
       } catch (error) {
         resetShell(elements.compareChartShell);
         elements.comparisonCards.innerHTML = "";
+        hideComparisonInsight();
         if (comparisonChart) {
           comparisonChart.destroy();
           comparisonChart = null;
         }
-        setStatus(elements.compareStatus, NO_DATA_MESSAGE, "error");
+        setStatus(elements.compareStatus, emptyState("Comparison data is unavailable right now.", FRIENDLY_EMPTY_MESSAGE), "empty");
       } finally {
         elements.compareButton.disabled = false;
+        elements.compareSection.classList.remove("loading");
       }
     }
 
@@ -1004,6 +1893,7 @@
       const url = buildHistoryUrl(country, indicator);
 
       elements.historyButton.disabled = true;
+      elements.historySection.classList.add("loading");
       setStatus(elements.historyStatus, loadingText("Fetching historical data..."));
       resetShell(elements.historyChartShell);
 
@@ -1051,15 +1941,17 @@
         });
 
         setStatus(elements.historyStatus, "");
+        updateLastUpdated();
       } catch (error) {
         resetShell(elements.historyChartShell);
         if (historyChart) {
           historyChart.destroy();
           historyChart = null;
         }
-        setStatus(elements.historyStatus, NO_DATA_MESSAGE, "error");
+        setStatus(elements.historyStatus, emptyState("Historical data is unavailable right now.", FRIENDLY_EMPTY_MESSAGE), "empty");
       } finally {
         elements.historyButton.disabled = false;
+        elements.historySection.classList.remove("loading");
       }
     }
 
@@ -1069,8 +1961,22 @@
     fillSelect(elements.compareIndicator, indicators, "GDP Growth Rate");
     fillSelect(elements.historyIndicator, indicators, "Inflation Rate");
 
+    renderSnapshot();
+    updateLastUpdated();
+    refreshGlobalSnapshot();
+
     elements.compareButton.addEventListener("click", compareCountries);
     elements.historyButton.addEventListener("click", loadHistory);
+    elements.compareSection.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && event.target.tagName === "SELECT") {
+        compareCountries();
+      }
+    });
+    elements.historySection.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && event.target.tagName === "SELECT") {
+        loadHistory();
+      }
+    });
   </script>
 </body>
 </html>
